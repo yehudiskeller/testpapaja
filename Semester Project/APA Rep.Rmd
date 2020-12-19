@@ -1,0 +1,170 @@
+---
+title             : "Reproducing the Analysis of Carstensen, Shavit, & Barnes (2020)"
+shorttitle        : "Age Emotion Analysis"
+
+author:
+  - name          : "Yehudis Keller"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "2900 Bedford Ave., Brooklyn, NY"
+    email         : "yehudiskeller@gmail.com"
+  - id            : "1"
+    institution   : "Brooklyn College of the City University of New York"
+    
+authornote: |
+  Yehudis Keller, Department of Psychology, Brooklyn College of the City University of New York.
+
+abstract: |
+  This study examines whether COVID-19 has had an adverse impact on older adults' emotional well-being. Generally, age is positively correlated with emotional well-being, but during the pandemic, older adults are the most at-risk of dying frorm the virus. A sample of 945 adults ages 18-76 answered online surveys on emotional well-being. I examine pre-test data to reproduce a t-test, in order to see if my results replicate the authors' results.
+  
+keywords            : "COVID-19, Age, Emotions, Well-Being, Pandemic"
+wordcount           : "X"
+
+bibliography      : ["references.bib", "r-references.bib"]
+
+ figsintext        : no
+ figurelist        : no
+ tablelist         : no
+ footnotelist      : no
+ lineno            : no
+ linkcolor         : "blue"
+ floatsintext      : no
+ linenumbers       : no
+ mask              : no
+ draft             : no
+ 
+ documentclass     : "apa6"
+ lang              : "english"
+ classoption       : "man"
+ output            : papaja::apa6_pdf
+
+---
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+```
+
+introduction: |
+
+This report reproduced the analysis of the first of the preliminary analyses as reported in @carstensen_age_2020. The data were downloaded from [https://osf.io/h7uqv/] (https://osf.io/h7uqv/) @carstensen_age_2020 had paricipants fill out an online survey rating the frequency and intensity of certain positive and negative emotions. The results were compared to age, to see if older adults have better emotional well-being than younger adults. Previous studies show that older adults have better emotional well-being than younger adults, but since COVID-19 disproportionately affects older adults, the authors are paying attention to any changes that might occur.
+
+# Methods
+
+## Participants
+
+## Material
+
+## Procedure
+
+# Results
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+the_data <- read.csv(file="~/Library/Mobile Documents/com~apple~CloudDocs/Experimental Psychology MA/Crump/testpapaja/Semester Project/Age Advantages Data/AgeAdvantagesEmotionCovid_Data.csv")
+
+#Paired Samples T-Test
+
+(dom_emotion <- t.test(the_data$avg_f_pos,
+                        the_data$avg_f_neg,
+                        paired = TRUE))
+                        
+# Mean Graph
+
+N <- 945
+pos_mean <- the_data$avg_f_pos/N
+neg_mean <- the_data$avg_f_neg/N
+pos_sd <- sqrt(((the_data$avg_f_pos-pos_mean)^2)/N)
+neg_sd <- sqrt(((the_data$avg_f_neg-neg_mean)^2)/N)
+X <- 1
+
+data_mean_diffs <- replicate(1000, mean(replicate(N, mean(rnorm(X, pos_mean, pos_sd)))) - mean(replicate(N, mean(rnorm(X, neg_mean, neg_sd)))))
+
+hist(data_mean_diffs)
+
+# Mean Table
+
+library(data.table)
+
+data.table(
+  pos_mean,
+  neg_mean
+)
+
+mean(the_data$avg_f_pos)
+mean(the_data$avg_f_neg)
+sd(the_data$avg_f_pos)
+sd(the_data$avg_f_neg)
+```
+
+## Reproducible report using above re-analysis
+
+As a whole, participants reported positive emotions `r mean(the_data$avg_f_pos)` `r sd(the_data$avg_f_pos)` more frequently than negative emotions `r mean(the_data$avg_f_neg)` `r sd(the_data$avg_f_neg)`, t(N-1) = `r dom_emotion`, p < .2.2e-16, d = 0.53, 95% confidence interval (CI) for the mean difference = [0.48, 0.63]. As noted above, Cronbach’s alphas within valence were high for both positive and negative emotions.
+
+# Discussion
+
+The re-analysis successfully reproduced the analysis reported by @cartensen_age_2020. In the following section, I show an example of completing a simulation based power analysis for this design.
+
+## Simulation-based power analysis
+
+The design was a paired samples design with 945 final subjects. 
+
+```{r}
+# samples A and B come from the same normal distribution
+A <- rnorm(n=945,mean=mean(the_data$avg_f_pos), sd=sd(the_data$avg_f_pos))
+B <- rnorm(n=945,mean=mean(the_data$avg_f_neg), sd=sd(the_data$avg_f_neg))
+
+# the pvalue
+t.test(A,B,var.equal=TRUE)$p.value
+
+# running the simulation
+sim_null <- function(){
+  A <- rnorm(n=945,mean=mean(the_data$avg_f_pos), sd=sd(the_data$avg_f_pos))
+  B <- rnorm(n=945,mean=mean(the_data$avg_f_neg), sd=sd(the_data$avg_f_neg))
+  return(t.test(A,B,var.equal=TRUE)$p.value)
+}
+
+# use replicate to run the sim many times
+outcomes <- replicate(1000,sim_null())
+
+# plot the null-distribution of p-values
+hist(outcomes)
+
+library(pwr)
+pwr.t.test(n=945,
+           d=1,
+           sig.level=.05,
+           type="paired.sample",
+           alternative="two.sided")
+#power curve
+effect_sizes <- seq(.1,2,.1)
+power <- sapply(effect_sizes,
+          FUN = function(x) {
+            pwr.t.test(n=945,
+            d=x,
+            sig.level=.05,
+            type="two.sample",
+            alternative="two.sided")$power})
+plot_df <- data.frame(effect_sizes,power)
+
+library(ggplot2)
+ggplot(plot_df, aes(x=effect_sizes,
+                    y=power))+
+  geom_point()+
+  geom_line()
+```
+
+
+\newpage
+
+# References
+```{r create_r-references}
+r_refs(file = "r-references.bib")
+```
+
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+
+<div id = "refs"></div>
+\endgroup

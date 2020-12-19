@@ -1,0 +1,141 @@
+---
+title: "Semester-Project"
+author: "Yehudis"
+date: "12/18/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, force = TRUE)
+```
+
+Age Advantages in Emotional Experience Persist Even Under Threat From the COVID-19 Pandemic
+
+```{r}
+# Read in the data
+
+# install.packages("readxl")
+# library(readxl)
+# the_data <- readxl::read_xlsx("~/Library/Mobile Documents/com~apple~CloudDocs/Experimental Psychology MA/Crump/StatsLab1/Semester Project/Age Advantages Data/AgeAdvantagesEmotionCovid_Data.csv", sheetIndex = 1)
+the_data <- read.csv(file="~/Library/Mobile Documents/com~apple~CloudDocs/Experimental Psychology MA/Crump/testpapaja/Semester Project/Age Advantages Data/AgeAdvantagesEmotionCovid_Data.csv")
+```
+
+Re-analysis of original data
+
+```{r}
+#Paired Samples T-Test
+
+(dom_emotion <- t.test(the_data$avg_f_pos,
+                        the_data$avg_f_neg,
+                        paired = TRUE))
+```
+
+```{r}
+# Mean Graph
+
+N <- 945
+pos_mean <- the_data$avg_f_pos/N
+neg_mean <- the_data$avg_f_neg/N
+pos_sd <- sqrt(((the_data$avg_f_pos-pos_mean)^2)/N)
+neg_sd <- sqrt(((the_data$avg_f_neg-neg_mean)^2)/N)
+X <- 1
+
+data_mean_diffs <- replicate(1000, mean(replicate(N, mean(rnorm(X, pos_mean, pos_sd)))) - mean(replicate(N, mean(rnorm(X, neg_mean, neg_sd)))))
+
+hist(data_mean_diffs)
+```
+
+```{r}
+# Mean Table
+
+library(data.table)
+
+data.table(
+  pos_mean,
+  neg_mean
+)
+
+mean(the_data$avg_f_pos)
+mean(the_data$avg_f_neg)
+sd(the_data$avg_f_pos)
+sd(the_data$avg_f_neg)
+```
+Reproducible Report
+
+1. A brief description of the research question and experiment (with citation to the paper, and link to find the data) (3 points)
+
+- Studies on mental health and psychological well-being are done during COVID-19 to see if there are changes in well-being patterns across the US, as cases are rising and lockdown continues. Prior research found a positive relationship between age and psychological well-being (older adults have greater emotional well-being). Older adults are the most adversely affected population from COVID-19, but this current study @carstensen_age_2020 finds that older adults still maintain better emotional well-being than younger adults. The study surveyed 945 adults ages 18-76 to assess positive and negative emotions. As part of the preliminary analyses, a t-test was conducted between overall positive and negative mean frequencies of emotions in the entire sample. Overall, positive emotions prevailed (were more frequent).
+
+data source: https://osf.io/h7uqv/
+
+2. The R code chunks necessary to complete the re-analysis (3 points).
+
+- <!-- #Paired Samples T-Test -->
+
+<!-- (dom_emotion <- t.test(the_data$avg_f_pos, -->
+<!--                         the_data$avg_f_neg, -->
+<!--                         paired = TRUE)) -->
+
+3. A write-up of your re-analysis results. (3 points)
+
+-   As a whole, participants reported positive emotions (M = 1.97, SD = 0.56) more frequently than negative emotions (M = 1.42, SD = 0.66), t(944) = 15.41, p < .2.2e-16, d = 0.53, 95% confidence interval (CI) for the mean difference = [0.48, 0.63]. As noted above, Cronbach’s alphas within valence were high for both positive and negative emotions.
+
+4. A brief discussion of whether you were successful or not. (1 point)
+
+- I was nearly successful in my replication. Although every other aspect of my retest matched the original data, my p-value was incoherent at < 2.2e-16, which I am unsure how to interpret.
+
+
+library("papaja")
+```
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+```
+
+```{r}
+the_data <- read.csv(file="~/Library/Mobile Documents/com~apple~CloudDocs/Experimental Psychology MA/Crump/testpapaja/Semester Project/Age Advantages Data/AgeAdvantagesEmotionCovid_Data.csv")
+
+#Paired Samples T-Test
+
+(dom_emotion <- t.test(the_data$avg_f_pos,
+                        the_data$avg_f_neg,
+                        paired = TRUE))
+                        
+# Mean Graph
+
+N <- 945
+pos_mean <- the_data$avg_f_pos/N
+neg_mean <- the_data$avg_f_neg/N
+pos_sd <- sqrt(((the_data$avg_f_pos-pos_mean)^2)/N)
+neg_sd <- sqrt(((the_data$avg_f_neg-neg_mean)^2)/N)
+X <- 1
+
+data_mean_diffs <- replicate(1000, mean(replicate(N, mean(rnorm(X, pos_mean, pos_sd)))) - mean(replicate(N, mean(rnorm(X, neg_mean, neg_sd)))))
+
+hist(data_mean_diffs)
+
+# Mean Table
+
+library(data.table)
+
+data.table(
+  pos_mean,
+  neg_mean
+)
+
+mean(the_data$avg_f_pos)
+mean(the_data$avg_f_neg)
+sd(the_data$avg_f_pos)
+sd(the_data$avg_f_neg)
+
+```
+
+# Original text from the authors results
+
+As a whole, participants reported positive emotions (M = 1.97, SD = 0.56) more frequently than negative emotions (M = 1.42, SD = 0.66), t(944) = 15.41, p < .2.2e-16, d = 0.53, 95% confidence interval (CI) for the mean difference = [0.48, 0.63]. As noted above, Cronbach’s alphas within valence were high for both positive and negative emotions.
+
+# Reproducible report using above re-analysis
+
+As a whole, participants reported positive emotions `r mean(the_data$avg_f_pos)` `r sd(the_data$avg_f_pos)` more frequently than negative emotions `r mean(the_data$avg_f_neg)` `r sd(the_data$avg_f_neg)`, t(N-1) = `r dom_emotion`, p < .2.2e-16, d = 0.53, 95% confidence interval (CI) for the mean difference = [0.48, 0.63]. As noted above, Cronbach’s alphas within valence were high for both positive and negative emotions.
